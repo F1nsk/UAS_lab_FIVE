@@ -30,15 +30,15 @@ bias_gyro_y = 0.0 # [rad/measurement]
 bias_gyro_z = 0.0 # [rad/measurement]
 
 # variances
-gyroVar = 
-pitchVar = 
+gyroVar = 2		#Needs better estimates!
+pitchVar = 3		#Needs better estimates!
 
 # Kalman filter start guess
 estAngle = -pi/4.0
-estVar = 
+estVar = 2		#Needs better estimates!
 
 # Kalman filter housekeeping variables
-gyroVarAcc = 
+gyroVarAcc = 3		#Needs better estimates!
 
 ######################################################
 
@@ -130,17 +130,17 @@ for line in f:
 	gyro_z_rel +=
 
 	# Kalman prediction step (we have new data in each iteration)
-
-
+	x_minus = x_prev + mu + v
+	P_minus = P_prev + Q
 
 
 	# Kalman correction step (we have new data in each iteration)
-
-
+	x_plus = x_minus + kalman_estimate*(z - x_minus)
+	P_plus = P_minus*(1-kalmans_estimate)
 
 
 	# define which value to plot as the Kalman filter estimate
-	kalman_estimate = 
+	kalman_estimate = P_minus /(P_minus + R)
 
 	# define which value to plot as the absolute value (pitch/roll)
 	pitch_roll_plot = pitch
