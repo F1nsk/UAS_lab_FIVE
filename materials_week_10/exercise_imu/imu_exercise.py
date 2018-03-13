@@ -3,14 +3,14 @@
 
 # IMU exercise
 # Copyright (c) 2015-2018 Kjeld Jensen kjen@mmmi.sdu.dk kj@kjen.dk
-
+import numpy as np
 ##### Insert initialize code below ###################
 
 ## Uncomment the file to read ##
-#fileName = 'imu_razor_data_static.txt'
+fileName = 'imu_razor_data_static.txt'
 #fileName = 'imu_razor_data_pitch_55deg.txt'
 #fileName = 'imu_razor_data_roll_65deg.txt'
-fileName = 'imu_razor_data_yaw_90deg.txt'
+#fileName = 'imu_razor_data_yaw_90deg.txt'
 
 ## IMU type
 #imuType = 'vectornav_vn100'
@@ -29,9 +29,11 @@ t_min = 0.0
 t_max = 0.0
 all_time = []
 all_angle =[]
+pitch_var =[]
+gyro_var=[]
 #bias =  2.5645783787785335
 bias =  0.0004507093880603014
-staticData = False
+staticData = True
 dataWithBias = True
 
 
@@ -120,13 +122,16 @@ for line in f:
 		
 	all_time.append(ts_now)
 	all_angle.append(relAng_z)
+	pitch_var.append(acc_y)
+	gyro_var.append(gyro_y)
 	
 	
 	
 	
 
 	######################################################
-	
+print("gyro ",np.var(np.array(gyro_var)))	
+print("pitch ",np.var(np.array(pitch_var)))	
 t_min= min(all_time)
 t_max= max(all_time)
 ang_min=min(all_angle)

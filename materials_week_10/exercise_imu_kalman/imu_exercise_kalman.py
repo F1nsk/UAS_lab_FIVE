@@ -30,12 +30,12 @@ bias_gyro_y = 0.0004507093880603014 # [rad/measurement]
 bias_gyro_z = 0.0 # [rad/measurement]
 
 # variances
-gyroVar = 0.621		#Needs better estimates!
-pitchVar = 0.149		#Needs better estimates!
+gyroVar = 4.2427261793546487*10**-06##0.621		#Needs better estimates!
+pitchVar = 0.0029089219229432813##0.149		#Needs better estimates!
 
 # Kalman filter start guess
 estAngle = -pi/4.0
-estVar = 0.4		#Needs better estimates!
+estVar = 0.004		#Needs better estimates!
 
 # Kalman filter housekeeping variables
 gyroVarAccumulated = 0
@@ -208,7 +208,7 @@ if showPlot == True:
 	plt.title('Accelerometer (blue) & Kalman estimation (red) angles')
 	plt.plot(plotDataAcc,'blue')
 	plt.plot(plotDataKalman,'red')
-	plt.savefig('imu_exercise_acc_kalman.png')
+	plt.savefig('imu_exercise_acc_kalman_troll.png')
 	
 	#plt.figure(3)
 	#plt.title('Accelerometer')
