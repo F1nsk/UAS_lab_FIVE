@@ -56,7 +56,7 @@ class imu_visualize():
 	 
 		# Draw Cube (multiple quads)
 		glBegin(GL_QUADS)
-	 	glColor3f(1.0,0.0,0.0)
+		glColor3f(1.0,0.0,0.0)
 		glVertex3f( 1.0, 1.0,-1.0)
 		glVertex3f(-1.0, 1.0,-1.0)
 		glVertex3f(-1.0, 1.0, 1.0)

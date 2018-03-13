@@ -25,20 +25,21 @@ show3DLiveViewInterval = 3
 ##### Insert initialize code below ###################
 
 # approx. bias values determined by averaging over static measurements
-bias_gyro_x = 0.0 # [rad/measurement]
-bias_gyro_y = 0.0 # [rad/measurement]
+bias_gyro_x = 0.0004507093880603014 # [rad/measurement]
+bias_gyro_y = 0.0004507093880603014 # [rad/measurement]
 bias_gyro_z = 0.0 # [rad/measurement]
 
 # variances
-gyroVar = 2		#Needs better estimates!
-pitchVar = 3		#Needs better estimates!
+gyroVar = 0.621		#Needs better estimates!
+pitchVar = 0.149		#Needs better estimates!
 
 # Kalman filter start guess
 estAngle = -pi/4.0
-estVar = 2		#Needs better estimates!
+estVar = 0.4		#Needs better estimates!
 
 # Kalman filter housekeeping variables
-gyroVarAcc = 3		#Needs better estimates!
+gyroVarAccumulated = 0
+
 
 ######################################################
 
@@ -51,6 +52,7 @@ plotDataKalman = []
 gyro_x_rel = 0.0
 gyro_y_rel = 0.0
 gyro_z_rel = 0.0
+
 
 # open the imu data file
 f = open (fileName, "r")
@@ -72,14 +74,16 @@ for line in f:
 	line = line.replace ('*',',') # make the checkum another csv value
 	csv = line.split(',')
 
-	# keep track of the timestamps 
+	# keep track of the timestamps
 	ts_recv = float(csv[0])
-	if count == 1: 
+	if count == 1:
 		ts_now = ts_recv # only the first time
- 	ts_prev = ts_now
+	ts_prev = ts_now
 	ts_now = ts_recv
+	
 
-	if imuType == 'sparkfun_razor': 
+
+	if imuType == 'sparkfun_razor':
 		# import data from a SparkFun Razor IMU (SDU firmware)
 		# outputs ENU reference system
 		acc_x = int(csv[2]) / 1000.0 * 4 * 9.82;
@@ -89,7 +93,7 @@ for line in f:
 		gyro_y = int(csv[6]) * 1/14.375 * pi/180.0;
 		gyro_z = int(csv[7]) * 1/14.375 * pi/180.0;
 
-	elif imuType == 'vectornav_vn100': 
+	elif imuType == 'vectornav_vn100':
 		# import data from a VectorNav VN-100 configured to output $VNQMR
 		# outputs NED reference system (therefore converted to ENU)
 		acc_y = float(csv[9])
@@ -121,26 +125,47 @@ for line in f:
 	## Insert your code here ##
 
 	# calculate pitch (x-axis) and roll (y-axis) angles
-	pitch =  
-	roll = 
+	pitch = atan2( acc_y , (sqrt(acc_x**2 + acc_z**2)))
+	roll = atan2((-acc_x),acc_z)
 
 	# integrate gyro velocities to releative angles
-	gyro_x_rel +=    
-	gyro_y_rel +=
-	gyro_z_rel +=
+	delta_t = ts_now -ts_prev
+	gyro_x_rel += delta_t*gyro_x
+	gyro_y_rel += delta_t*gyro_y
+	gyro_z_rel += delta_t*gyro_z
 
 	# Kalman prediction step (we have new data in each iteration)
-	x_minus = x_prev + mu + v
-	P_minus = P_prev + Q
-
+	
+	predAngle = estAngle + pitch * delta_t
+	gyroVarAccumulated = gyroVarAccumulated+  gyroVar
+	predVar = estVar + gyroVarAccumulated * delta_t
+	estAngle = predAngle
+	estVar = predVar
+	#accVar = pitch
+	print("delta t",delta_t)
+	print("predAngle ",predAngle)
+	print("gyroVarAccumulated  ",gyroVarAccumulated)
+	print("predVar ",predVar)
+	print("estVar",estVar)
+	
+	
 
 	# Kalman correction step (we have new data in each iteration)
-	x_plus = x_minus + kalman_estimate*(z - x_minus)
-	P_plus = P_minus*(1-kalmans_estimate)
+	#if predVar*accVar != 0:
+	K = predVar/ (predVar+pitchVar)
+	    #print(K)
+	corrAngle = predAngle + K*(pitch-predAngle)
+	print("K ", K)
+	print("corrAngle ",corrAngle)#print("accVar " ,accVar)
+	corrVar = predVar * (1-K)
+	estAngle =corrAngle
+	estVar = corrVar
+	gyroVarAccumulated =0
+	print("\n")
 
 
 	# define which value to plot as the Kalman filter estimate
-	kalman_estimate = P_minus /(P_minus + R)
+	kalman_estimate = corrAngle
 
 	# define which value to plot as the absolute value (pitch/roll)
 	pitch_roll_plot = pitch
@@ -166,6 +191,7 @@ for line in f:
 		plotDataGyro.append(gyro_rel_plot*180.0/pi)
 		plotDataAcc.append(pitch_roll_plot*180.0/pi)
 		plotDataKalman.append(kalman_estimate*180.0/pi)
+		#print(kalman_estimate*180.0/pi)
 
 # closing the file	
 f.close()
@@ -183,8 +209,17 @@ if showPlot == True:
 	plt.plot(plotDataAcc,'blue')
 	plt.plot(plotDataKalman,'red')
 	plt.savefig('imu_exercise_acc_kalman.png')
+	
+	#plt.figure(3)
+	#plt.title('Accelerometer')
+	#plt.plot(plotDataAcc)
+
+    ##dummie figure because of error
+	#plt.figure(4)
+	#plt.title('Accelerometer')
+	#plt.plot(plotDataAcc)	
 	plt.draw()
-	print 'Press enter to quit'
+	print ('Press enter to quit')
 	raw_input()
 
 
